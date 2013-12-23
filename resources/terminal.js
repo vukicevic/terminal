@@ -120,7 +120,7 @@ function Terminal(container, state) {
     while(moveRight());
     if (caret.parentNode.textContent == " ") return;
 
-    state(insertLine(label.textContent, caret.previousSibling.textContent, "stdin").trim());
+    state = state(insertLine(label.textContent, caret.previousSibling.textContent, "stdin").trim());
 
     clearLine();
     input.scrollIntoView();
@@ -146,8 +146,8 @@ function Terminal(container, state) {
     }
   }, true);
 
-  state = state(function(data) { return insertText(data, "stdout"); }, 
-                function(data) { return insertText(data, "stderr"); });
+  state = state(function(data) { var args = Array.prototype.slice.call(arguments); while (args.length) insertText(args.shift(), "stdout"); }, 
+                function(data) { if (label.firstChild) label.removeChild(label.firstChild); label.appendChild(document.createTextNode(data)); });
 
   return {
     setLabel: function(prompt) {
@@ -155,8 +155,7 @@ function Terminal(container, state) {
       label.appendChild(document.createTextNode(prompt));
     },
     print: function(data, prompt) {
-      return (prompt) ? insertLine(prompt, data, "")
-                      : insertText(data, "stdout");
+      return (prompt) ? insertLine(prompt, data, "") : insertText(data, "stdout");
     }
   };
 }

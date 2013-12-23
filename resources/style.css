@@ -1,0 +1,53 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+body {
+  background-color: black;
+  color: #bcefe6;
+  font-family: monospace;
+  padding: 10px 0;
+  text-shadow: 0 0 3px #bcefe6;
+  transition: text-shadow 100ms ease;
+}
+#term {
+  overflow-y: scroll;
+  height: 100%;
+}
+dl {
+  float: left;
+  white-space: pre;
+  margin-left: -3em;
+  transition: margin 400ms ease;
+}
+dt {
+  float: left;
+  clear: left;
+}
+dt:after {
+  content: "# ";
+}
+dt>span:after {
+  content: " ";
+}
+dd.stdout, dd.stderr {
+  margin-left: 3.6em;
+}
+span.line {
+  display: inline-block;
+  width: 3.6em;
+  text-align: right;
+}
+span.clock {
+  margin-left: 3.6em;
+}
+.highlight {
+  background-color: #bcefe6;
+  color: black;
+  box-shadow: 0 0 3px #bcefe6;
+}
+.nofocus {
+  background-color: transparent !important;
+  color: #bcefe6 !important;
+  box-shadow: 0 0 3px #bcefe6;
+}

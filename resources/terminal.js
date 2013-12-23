@@ -23,8 +23,7 @@ function Terminal(container, state) {
     var f = shell.insertBefore(document.createElement("dd"), input);
     
     if (type) f.classList.add(type);
-    f.appendChild(document.createTextNode(data));
-    return data;
+    return f.appendChild(document.createTextNode(data)).textContent;
   }
 
   function insertLine(prompt, data, type) {
@@ -120,7 +119,9 @@ function Terminal(container, state) {
   function execute() {
     while(moveRight());
     if (caret.parentNode.textContent == " ") return;
+
     state(insertLine(label.textContent, caret.previousSibling.textContent, "stdin").trim());
+
     clearLine();
     input.scrollIntoView();
   

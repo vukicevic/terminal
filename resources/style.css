@@ -1,18 +1,10 @@
-* {
-  padding: 0;
-  margin: 0;
-}
-body {
-  background-color: black;
-  color: #bcefe6;
-  font-family: monospace;
-  padding: 10px 0;
-  text-shadow: 0 0 3px #bcefe6;
-  transition: text-shadow 100ms ease;
-}
 #term {
   overflow-y: scroll;
   height: 100%;
+  background-color: black;
+  color: #bcefe6;
+  font-family: monospace;
+  text-shadow: 0 0 3px #bcefe6;
 }
 dl {
   float: left;

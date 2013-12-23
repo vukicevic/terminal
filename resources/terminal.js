@@ -3,7 +3,8 @@ function Terminal(container, state) {
       input = shell.appendChild(document.createElement("dt")),
       field = shell.appendChild(document.createElement("dd")),
       caret = field.appendChild(document.createElement("span")),
-      label = input.appendChild(document.createElement('span'));
+      label = input.appendChild(document.createElement('span')),
+      alive = false;
 
   function toggleCaret(highlight) {
     if (highlight || !caret.classList.contains("highlight")) {
@@ -18,28 +19,20 @@ function Terminal(container, state) {
     }
   }
 
-  function toggleLineNumbers() {
-    shell.style.marginLeft = (shell.style.marginLeft == "0px") ? "-3em" : "0px";
-  }
-
-  function insertText(data, type, id) {
+  function insertText(data, type) {
     var f = shell.insertBefore(document.createElement("dd"), input);
     
-    f.setAttribute("id", id);
     if (type) f.classList.add(type);
     f.appendChild(document.createTextNode(data));
     return data;
   }
 
-  function insertLine(line, prompt, data, type) {
+  function insertLine(prompt, data, type) {
     var f = shell.insertBefore(document.createElement("dt"), input),
-        l = f.appendChild(document.createElement("span")),
         n = f.appendChild(document.createElement("span"));
     
-    l.classList.add("line");
-    l.appendChild(document.createTextNode(line));
     n.appendChild(document.createTextNode(prompt));
-    return insertText(data, type, line);
+    return insertText(data, type);
   }
 
   function clearLine() {
@@ -71,6 +64,7 @@ function Terminal(container, state) {
   }
 
   function control(event) {
+    if (!alive) return;
     toggleCaret(true);
     switch (event.which) {
       case 13:
@@ -84,25 +78,25 @@ function Terminal(container, state) {
         moveRight(true);
       break;
       case 37:
-        if (!moveLeft()) toggleLineNumbers();
+        moveLeft();
       break;
       case 39:
         moveRight();
       break;
       case 38:
         event.preventDefault();
-        if (caret.pntr > 0) { 
+        if (caret.pointer > 0) { 
           clearLine();
-          caret.parentNode.insertBefore(document.createTextNode(shell.querySelectorAll("dd.stdin")[--caret.pntr].textContent.trim()), caret);
+          caret.parentNode.insertBefore(document.createTextNode(shell.querySelectorAll("dd.stdin")[--caret.pointer].textContent.trim()), caret);
         }
       break;
       case 40:
         event.preventDefault();
         var lines = shell.querySelectorAll("dd.stdin");
-        if (caret.pntr < lines.length) {
+        if (caret.pointer < lines.length) {
           clearLine();
-          if (++caret.pntr < lines.length)
-            caret.parentNode.insertBefore(document.createTextNode(lines[caret.pntr].textContent.trim()), caret);
+          if (++caret.pointer < lines.length)
+            caret.parentNode.insertBefore(document.createTextNode(lines[caret.pointer].textContent.trim()), caret);
         }
       break;
       case 35:
@@ -115,7 +109,7 @@ function Terminal(container, state) {
   }
 
   function write(event) {
-    if (event.which < 32) return;
+    if (!alive || event.which < 32) return;
     if (!caret.previousSibling) {
       caret.parentNode.insertBefore(document.createTextNode(String.fromCharCode(event.which)), caret);
     } else {
@@ -126,38 +120,41 @@ function Terminal(container, state) {
   function execute() {
     while(moveRight());
     if (caret.parentNode.textContent == " ") return;
-    state(insertLine(caret.line++, label.textContent, caret.previousSibling.textContent, "stdin").trim());
+    state(insertLine(label.textContent, caret.previousSibling.textContent, "stdin").trim());
     clearLine();
     input.scrollIntoView();
   
-    caret.pntr = shell.querySelectorAll("dd.stdin").length;
+    caret.pointer = shell.querySelectorAll("dd.stdin").length;
   }
 
   caret.timer = window.setInterval(toggleCaret, 600);
+  caret.classList.add("nofocus");
   caret.textContent = " ";
-  caret.line = 0;
-  caret.pntr = 0;
+  caret.pointer = 0;
 
   label.classList.add("label");
 
   window.addEventListener("keydown", control, true);
   window.addEventListener("keypress", write, true);
-  window.addEventListener("focus", function() { caret.classList.remove("nofocus"); }, true);
-  window.addEventListener("blur", function() { caret.classList.add("nofocus"); }, true);
+  window.addEventListener("click", function(e) { 
+    alive = container.contains(e.target);
+    if (alive) {
+      caret.classList.remove("nofocus"); 
+    } else { 
+      caret.classList.add("nofocus"); 
+    }
+  }, true);
 
   state = state(function(data) { return insertText(data, "stdout"); }, 
                 function(data) { return insertText(data, "stderr"); });
 
   return {
-    setLabel: function(text) {
+    setLabel: function(prompt) {
       if (label.firstChild) label.removeChild(label.firstChild);
-      label.appendChild(document.createTextNode(text));
-    },
-    read: function(line) {
-      return document.getElementById(line) && document.getElementById(line).textContent.trim();
+      label.appendChild(document.createTextNode(prompt));
     },
     print: function(data, prompt) {
-      return (prompt) ? insertLine(caret.line++, prompt, data, "")
+      return (prompt) ? insertLine(prompt, data, "")
                       : insertText(data, "stdout");
     }
   };

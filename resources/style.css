@@ -1,6 +1,7 @@
-#term {
+.terminal {
   overflow-y: scroll;
-  height: 100%;
+  height: 40%;
+  width: 40%;
   background-color: black;
   color: #bcefe6;
   font-family: monospace;
@@ -10,8 +11,6 @@ dl {
   float: left;
   white-space: pre;
   margin: 0.5em;
-  margin-left: -3em;
-  transition: margin 400ms ease;
 }
 dt {
   float: left;
@@ -20,19 +19,12 @@ dt {
 dt:after {
   content: "> ";
 }
+dd {
+  float: left;
+  margin: 0;
+}
 dd.stdout, dd.stderr {
-  margin-left: 3.6em;
-}
-span.line {
-  display: inline-block;
-  width: 3.6em;
-  text-align: right;
-}
-span.line:after {
-  content: " ";
-}
-span.label {
-  margin-left: 3.6em;
+  clear: left;
 }
 .highlight {
   background-color: #bcefe6;

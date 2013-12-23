@@ -26,13 +26,14 @@ dd {
 dd.stdout, dd.stderr {
   clear: left;
 }
+dd>span {
+  box-shadow: 0 0 3px #bcefe6;
+}
 .highlight {
   background-color: #bcefe6;
   color: black;
-  box-shadow: 0 0 3px #bcefe6;
 }
 .nofocus {
   background-color: transparent !important;
   color: #bcefe6 !important;
-  box-shadow: 0 0 3px #bcefe6;
 }

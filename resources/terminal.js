@@ -5,26 +5,12 @@ function Terminal(container, state) {
       caret = field.appendChild(document.createElement("span")),
       label = input.appendChild(document.createElement('span'));
 
-  caret.timer = window.setInterval(toggleCaret, 600);
-  caret.textContent = " ";
-  caret.line = 0;
-  caret.pntr = 0;
-
-  label.classList.add("label");
-  
-  window.addEventListener("keydown", control, true);
-  window.addEventListener("keypress", write, true);
-  window.addEventListener("focus", function() { caret.classList.remove("nofocus"); }, true);
-  window.addEventListener("blur", function() { caret.classList.add("nofocus"); }, true);
-  
-  state = state(function(data) { return insertText(data, "stdout"); }, 
-                function(data) { return insertText(data, "stderr"); });
-  
   function toggleCaret(highlight) {
-    if (highlight || !caret.classList.contains("highlight"))
+    if (highlight || !caret.classList.contains("highlight")) {
       caret.classList.add("highlight");
-    else
+    } else {
       caret.classList.remove("highlight");
+    }
 
     if (highlight) {
       window.clearInterval(caret.timer);
@@ -34,6 +20,54 @@ function Terminal(container, state) {
 
   function toggleLineNumbers() {
     shell.style.marginLeft = (shell.style.marginLeft == "0px") ? "-3em" : "0px";
+  }
+
+  function insertText(data, type, id) {
+    var f = shell.insertBefore(document.createElement("dd"), input);
+    
+    f.setAttribute("id", id);
+    if (type) f.classList.add(type);
+    f.appendChild(document.createTextNode(data));
+    return data;
+  }
+
+  function insertLine(line, prompt, data, type) {
+    var f = shell.insertBefore(document.createElement("dt"), input),
+        l = f.appendChild(document.createElement("span")),
+        n = f.appendChild(document.createElement("span"));
+    
+    l.classList.add("line");
+    l.appendChild(document.createTextNode(line));
+    n.appendChild(document.createTextNode(prompt));
+    return insertText(data, type, line);
+  }
+
+  function clearLine() {
+    if (caret.previousSibling) caret.previousSibling.remove();
+    if (caret.nextSibling) caret.nextSibling.remove();
+    caret.textContent = " ";
+  }
+
+  function moveLeft(remove) {
+    if (!caret.previousSibling || caret.previousSibling.textContent == "") return false;
+    if (!remove) {
+      if (!caret.nextSibling) caret.parentNode.appendChild(document.createTextNode(""));
+      caret.nextSibling.textContent = caret.textContent + caret.nextSibling.textContent;
+      caret.textContent = caret.previousSibling.textContent.substring(caret.previousSibling.textContent.length - 1);
+    }
+    caret.previousSibling.textContent = caret.previousSibling.textContent.substring(0, caret.previousSibling.textContent.length - 1);
+    return true;
+  }
+
+  function moveRight(remove) {
+    if (!caret.nextSibling || caret.nextSibling.textContent == "") return false;
+    if (!remove) {
+      if (!caret.previousSibling) caret.parentNode.insertBefore(document.createTextNode(""), caret);
+      caret.previousSibling.textContent = caret.previousSibling.textContent + caret.textContent;
+    }
+    caret.textContent = caret.nextSibling.textContent.substring(0, 1);
+    caret.nextSibling.textContent = caret.nextSibling.textContent.substring(1);
+    return true;
   }
 
   function control(event) {
@@ -99,53 +133,20 @@ function Terminal(container, state) {
     caret.pntr = shell.querySelectorAll("dd.stdin").length;
   }
 
-  function insertLine(line, prompt, data, type) {
-    var f = shell.insertBefore(document.createElement("dt"), input),
-        l = f.appendChild(document.createElement("span")),
-        n = f.appendChild(document.createElement("span"));
-    
-    l.classList.add("line");
-    l.appendChild(document.createTextNode(line));
-    n.appendChild(document.createTextNode(prompt));
-    return insertText(data, type, line);
-  }
+  caret.timer = window.setInterval(toggleCaret, 600);
+  caret.textContent = " ";
+  caret.line = 0;
+  caret.pntr = 0;
 
-  function insertText(data, type, id) {
-    var f = shell.insertBefore(document.createElement("dd"), input);
-    
-    f.setAttribute("id", id);
-    if(type) f.classList.add(type);
-    f.appendChild(document.createTextNode(data));
-    return data;
-  }
+  label.classList.add("label");
 
-  function clearLine() {
-    if (caret.previousSibling) caret.previousSibling.remove();
-    if (caret.nextSibling) caret.nextSibling.remove();
-    caret.textContent = " ";
-  }
+  window.addEventListener("keydown", control, true);
+  window.addEventListener("keypress", write, true);
+  window.addEventListener("focus", function() { caret.classList.remove("nofocus"); }, true);
+  window.addEventListener("blur", function() { caret.classList.add("nofocus"); }, true);
 
-  function moveLeft(remove) {
-    if (!caret.previousSibling || caret.previousSibling.textContent == "") return false;
-    if (!remove) {
-      if (!caret.nextSibling) caret.parentNode.appendChild(document.createTextNode(""));
-      caret.nextSibling.textContent = caret.textContent + caret.nextSibling.textContent;
-      caret.textContent = caret.previousSibling.textContent.substring(caret.previousSibling.textContent.length - 1);
-    }
-    caret.previousSibling.textContent = caret.previousSibling.textContent.substring(0, caret.previousSibling.textContent.length - 1);
-    return true;
-  }
-
-  function moveRight(remove) {
-    if (!caret.nextSibling || caret.nextSibling.textContent == "") return false;
-    if (!remove) {
-      if (!caret.previousSibling) caret.parentNode.insertBefore(document.createTextNode(""), caret);
-      caret.previousSibling.textContent = caret.previousSibling.textContent + caret.textContent;
-    }
-    caret.textContent = caret.nextSibling.textContent.substring(0, 1);
-    caret.nextSibling.textContent = caret.nextSibling.textContent.substring(1);
-    return true;
-  }
+  state = state(function(data) { return insertText(data, "stdout"); }, 
+                function(data) { return insertText(data, "stderr"); });
 
   return {
     setLabel: function(text) {

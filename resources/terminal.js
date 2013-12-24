@@ -104,11 +104,14 @@ function Terminal(container, state) {
       case 36:
         while(moveLeft());
       break;
+      case 67:
+        if (event.ctrlKey) clearLine();
+      break;
     }
   }
 
   function write(event) {
-    if (!alive || event.which < 32) return;
+    if (!alive || event.which < 32 || event.ctrlKey) return;
     if (!caret.previousSibling) {
       caret.parentNode.insertBefore(document.createTextNode(String.fromCharCode(event.which)), caret);
     } else {
